@@ -48,7 +48,7 @@ arch=$(uname -m)
 if [ "$arch" == "arm64" ]; then
   HOMEBREW_PREFIX=/opt/homebrew
 
-  /usr/sbin/softwareupdate –install-rosetta –agree-to-license
+  /usr/sbin/softwareupdate --install-rosetta --agree-to-license
 else
   HOMEBREW_PREFIX=/usr/local
 fi
