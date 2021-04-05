@@ -96,6 +96,7 @@ if ! command -v brew >/dev/null; then
 
     # shellcheck disable=SC2016
     append_to_zshrc "export PATH=\"$HOMEBREW_PREFIX/bin:$PATH\"" 1
+    append_to_zshrc "source $(brew --prefix asdf)/asdf.sh" 1
 
     export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 fi
@@ -154,7 +155,7 @@ cask 'postgres'
 cask 'slack'
 cask 'visual-studio-code'
 cask 'vlc'
-cask 'zoomus'
+cask 'zoom'
 EOF
 
 add_or_update_asdf_plugin() {
@@ -166,6 +167,8 @@ add_or_update_asdf_plugin() {
     asdf plugin-update "$name"
   fi
 }
+
+source $(brew --prefix asdf)/asdf.sh
 
 add_or_update_asdf_plugin "erlang"
 add_or_update_asdf_plugin "elixir"
