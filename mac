@@ -142,20 +142,6 @@ brew 'zsh'
 brew 'zsh-autosuggestions'
 brew 'zsh-history-substring-search'
 brew 'zsh-syntax-highlighting'
-
-cask '1password'
-cask 'alfred'
-cask 'dash'
-cask 'firefox'
-cask 'google-chrome'
-cask 'iterm2'
-cask 'keybase'
-cask 'ngrok'
-cask 'postgres'
-cask 'slack'
-cask 'visual-studio-code'
-cask 'vlc'
-cask 'zoom'
 EOF
 
 add_or_update_asdf_plugin() {
@@ -177,6 +163,30 @@ add_or_update_asdf_plugin "nodejs"
 add_or_update_asdf_plugin "dotnet-core"
 
 bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
+
+if [ "$arch" == "arm64" ] && ! command -v docker >/dev/null; then
+  wget -O /tmp/Docker.dmg https://desktop.docker.com/mac/stable/arm64/62632/Docker.dmg
+  sudo hdiutil attach /tmp/Docker.dmg
+  rsync -a /Volumes/Docker/Docker.app /Applications/
+fi
+
+# Install casks after everything else because if an app exists it will throw
+# an error and exit the script
+brew bundle --file=- <<EOF
+cask '1password'
+cask 'alfred'
+cask 'dash'
+cask 'firefox'
+cask 'google-chrome'
+cask 'iterm2'
+cask 'keybase'
+cask 'ngrok'
+cask 'postgres'
+cask 'slack'
+cask 'visual-studio-code'
+cask 'vlc'
+cask 'zoom'
+EOF
 
 if [ -f "$HOME/.laptop.local" ]; then
   fancy_echo "Running your customizations from ~/.laptop.local ..."
