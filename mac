@@ -35,6 +35,24 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 
 set -e
 
+echo "
+__________                   .__
+\______   \ _______  __ ____ |  |_______ ___.__.
+ |       _// __ \  \/ // __ \|  |\_  __ <   |  |
+ |    |   \  ___/\   /\  ___/|  |_|  | \/\___  |
+ |____|_  /\___  >\_/  \___  >____/__|   / ____|
+        \/     \/          \/            \/
+"
+
+arch=$(uname -m)
+if [ "$arch" == "arm64" ]; then
+  HOMEBREW_PREFIX=/opt/homebrew
+
+  /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+else
+  HOMEBREW_PREFIX=/usr/local
+fi
+
 if [ ! -d "$HOME/.bin/" ]; then
   mkdir "$HOME/.bin"
 fi
@@ -45,18 +63,6 @@ fi
 
 # shellcheck disable=SC2016
 append_to_zshrc 'export PATH="$HOME/.bin:$PATH"'
-
-HOMEBREW_PREFIX="/usr/local"
-
-if [ -d "$HOMEBREW_PREFIX" ]; then
-  if ! [ -r "$HOMEBREW_PREFIX" ]; then
-    sudo chown -R "$LOGNAME:admin" /usr/local
-  fi
-else
-  sudo mkdir "$HOMEBREW_PREFIX"
-  sudo chflags norestricted "$HOMEBREW_PREFIX"
-  sudo chown -R "$LOGNAME:admin" "$HOMEBREW_PREFIX"
-fi
 
 update_shell() {
   local shell_path;
@@ -72,7 +78,7 @@ update_shell() {
 
 case "$SHELL" in
   */zsh)
-    if [ "$(command -v zsh)" != '/usr/local/bin/zsh' ] ; then
+    if [ "$(command -v zsh)" != "$HOMEBREW_PREFIX/bin/zsh" ] ; then
       update_shell
     fi
     ;;
@@ -80,14 +86,6 @@ case "$SHELL" in
     update_shell
     ;;
 esac
-
-gem_install_or_update() {
-  if gem list "$1" --installed > /dev/null; then
-    gem update "$@"
-  else
-    gem install "$@"
-  fi
-}
 
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew ..."
@@ -97,104 +95,98 @@ if ! command -v brew >/dev/null; then
     append_to_zshrc '# recommended by brew doctor'
 
     # shellcheck disable=SC2016
-    append_to_zshrc 'export PATH="/usr/local/bin:$PATH"' 1
+    append_to_zshrc "export PATH=\"$HOMEBREW_PREFIX/bin:$PATH\"" 1
+    append_to_zshrc "source $(brew --prefix asdf)/asdf.sh" 1
 
-    export PATH="/usr/local/bin:$PATH"
-fi
-
-if brew list | grep -Fq brew-cask; then
-  fancy_echo "Uninstalling old Homebrew-Cask ..."
-  brew uninstall --force brew-cask
+    export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 fi
 
 fancy_echo "Updating Homebrew formulae ..."
 brew update --force # https://github.com/Homebrew/brew/issues/1151
 brew bundle --file=- <<EOF
-tap "thoughtbot/formulae"
-tap "homebrew/services"
-tap "universal-ctags/universal-ctags"
-tap "heroku/brew"
+cask_args appdir: '/Applications'
 
-# Unix
-brew "universal-ctags", args: ["HEAD"]
-brew "git"
-brew "openssl"
-brew "rcm"
-brew "reattach-to-user-namespace"
-brew "the_silver_searcher"
-brew "tmux"
-brew "vim"
-brew "watchman"
-brew "zsh"
+tap 'homebrew/cask'
+tap 'homebrew/bundle'
+tap 'heroku/brew'
 
-# Heroku
-brew "heroku/brew/heroku"
-brew "parity"
-
-# GitHub
-brew "gh"
-
-# Image manipulation
-brew "imagemagick"
-
-# Programming language prerequisites and package managers
-brew "libyaml" # should come after openssl
-brew "coreutils"
-brew "yarn"
-cask "gpg-suite"
-
-# Databases
-brew "postgres", restart_service: :changed
-brew "redis", restart_service: :changed
+brew 'asdf'
+brew 'bash'
+brew 'bat'
+brew 'coreutils'
+brew 'curl'
+brew 'dockutil'
+brew 'elixir'
+brew 'fd'
+brew 'fzf'
+brew 'git'
+brew 'gnu-sed'
+brew 'gnupg'
+brew 'heroku'
+brew 'htop'
+brew 'hub'
+brew 'hyperfine'
+brew 'jq'
+brew 'less'
+brew 'ncdu'
+brew 'nmap'
+brew 'parallel'
+brew 'pspg'
+brew 'pv'
+brew 'ripgrep'
+brew 'rsync'
+brew 'tmux'
+brew 'vim'
+brew 'wget'
+brew 'zsh'
+brew 'zsh-autosuggestions'
+brew 'zsh-history-substring-search'
+brew 'zsh-syntax-highlighting'
 EOF
 
-fancy_echo "Update heroku binary ..."
-brew unlink heroku
-brew link --force heroku
-
-fancy_echo "Configuring asdf version manager ..."
-if [ ! -d "$HOME/.asdf" ]; then
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.5.0
-  append_to_zshrc "source $HOME/.asdf/asdf.sh" 1
-fi
-
-alias install_asdf_plugin=add_or_update_asdf_plugin
 add_or_update_asdf_plugin() {
   local name="$1"
-  local url="$2"
 
   if ! asdf plugin-list | grep -Fq "$name"; then
-    asdf plugin-add "$name" "$url"
+    asdf plugin-add "$name"
   else
     asdf plugin-update "$name"
   fi
 }
 
-# shellcheck disable=SC1090
-source "$HOME/.asdf/asdf.sh"
-add_or_update_asdf_plugin "ruby" "https://github.com/asdf-vm/asdf-ruby.git"
-add_or_update_asdf_plugin "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
+source $(brew --prefix asdf)/asdf.sh
 
-install_asdf_language() {
-  local language="$1"
-  local version
-  version="$(asdf list-all "$language" | grep -v "[a-z]" | tail -1)"
+add_or_update_asdf_plugin "erlang"
+add_or_update_asdf_plugin "elixir"
+add_or_update_asdf_plugin "ruby"
+add_or_update_asdf_plugin "nodejs"
+add_or_update_asdf_plugin "dotnet-core"
 
-  if ! asdf list "$language" | grep -Fq "$version"; then
-    asdf install "$language" "$version"
-    asdf global "$language" "$version"
-  fi
-}
-
-fancy_echo "Installing latest Ruby ..."
-install_asdf_language "ruby"
-gem update --system
-number_of_cores=$(sysctl -n hw.ncpu)
-bundle config --global jobs $((number_of_cores - 1))
-
-fancy_echo "Installing latest Node ..."
 bash "$HOME/.asdf/plugins/nodejs/bin/import-release-team-keyring"
-install_asdf_language "nodejs"
+
+if [ "$arch" == "arm64" ] && ! command -v docker >/dev/null; then
+  wget -O /tmp/Docker.dmg https://desktop.docker.com/mac/stable/arm64/62632/Docker.dmg
+  sudo hdiutil attach /tmp/Docker.dmg
+  rsync -a /Volumes/Docker/Docker.app /Applications/
+fi
+
+# Install casks after everything else because if an app exists it will throw
+# an error and exit the script
+brew bundle --file=- <<EOF
+cask '1password'
+cask 'alfred'
+cask 'dash'
+cask 'firefox'
+cask 'google-chrome'
+cask 'iterm2'
+cask 'keybase'
+cask 'ngrok'
+cask 'postgres'
+cask 'slack'
+cask 'visual-studio-code'
+cask 'vlc'
+cask 'zoom'
+EOF
 
 if [ -f "$HOME/.laptop.local" ]; then
   fancy_echo "Running your customizations from ~/.laptop.local ..."
