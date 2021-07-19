@@ -103,10 +103,10 @@ read is_a_migration
 
 if ! [ "$is_a_migration" == "${is_a_migration#[Yy]}" ]; then
 
-  update_paths_in_zshrc
-
   fancy_echo "Creating dump file of migrated Homebrew formulae .."
   brew bundle dump
+
+  update_paths_in_zshrc
 fi
 
 if ! command -v brew >/dev/null; then
