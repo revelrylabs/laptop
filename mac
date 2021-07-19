@@ -89,10 +89,22 @@ case "$SHELL" in
     ;;
 esac
 
+update_paths_in_zshrc() {
+  fancy_echo "Updating Brew and ASDF paths in .zshrc"
+
+  append_to_zshrc "export PATH=\"$HOMEBREW_PREFIX/bin:$PATH\"" 1
+  append_to_zshrc "source $(brew --prefix asdf)/asdf.sh" 1
+
+  export PATH="$HOMEBREW_PREFIX/bin:$PATH"
+}
+
 echo "Are you migrating from an Intel Macbook AND have already ran Migration Assistant? Y or N"
 read is_a_migration
 
 if ! [ "$is_a_migration" == "${is_a_migration#[Yy]}" ]; then
+
+  update_paths_in_zshrc
+
   fancy_echo "Creating dump file of migrated Homebrew formulae .."
   brew bundle dump
 fi
@@ -104,11 +116,7 @@ if ! command -v brew >/dev/null; then
 
     append_to_zshrc '# recommended by brew doctor'
 
-    # shellcheck disable=SC2016
-    append_to_zshrc "export PATH=\"$HOMEBREW_PREFIX/bin:$PATH\"" 1
-    append_to_zshrc "source $(brew --prefix asdf)/asdf.sh" 1
-
-    export PATH="$HOMEBREW_PREFIX/bin:$PATH"
+    update_paths_in_zshrc
 fi
 
 fancy_echo "Updating Homebrew formulae ..."
