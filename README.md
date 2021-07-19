@@ -19,6 +19,7 @@ We support:
 * macOS High Sierra (10.13)
 * macOS Mojave (10.14)
 * macOS Catalina (10.15)
+* macOS Big Sur (11)
 
 Older versions may work but aren't regularly tested.
 Bug reports for older versions are welcome.
@@ -29,7 +30,7 @@ Install
 Download the script:
 
 ```sh
-curl --remote-name https://raw.githubusercontent.com/thoughtbot/laptop/master/mac
+curl --remote-name https://raw.githubusercontent.com/revelrylabs/laptop/master/mac
 ```
 
 Review the script (avoid running scripts you haven't read!):
@@ -60,7 +61,7 @@ Debugging
 Your last Laptop run will be saved to `~/laptop.log`.
 Read through it to see if you can debug the issue yourself.
 If not, copy the lines where the script failed into a
-[new GitHub Issue](https://github.com/thoughtbot/laptop/issues/new) for us.
+[new GitHub Issue](https://github.com/revelrylabs/laptop/issues/new) for us.
 Or, attach the whole log file as an attachment.
 
 What it sets up
@@ -81,7 +82,7 @@ Unix tools:
 * [The Silver Searcher] for finding things in files
 * [Tmux] for saving project state and switching between projects
 * [Watchman] for watching for filesystem events
-* [Zsh] as your shell
+* [Zsh] as your shell with [OhMyZsh]
 
 [Universal Ctags]: https://ctags.io/
 [Git]: https://git-scm.com/
@@ -91,6 +92,7 @@ Unix tools:
 [Tmux]: http://tmux.github.io/
 [Watchman]: https://facebook.github.io/watchman/
 [Zsh]: http://www.zsh.org/
+[OhMyZsh]: https://ohmyz.sh/
 
 Heroku tools:
 
@@ -188,28 +190,12 @@ can be used in your `~/.laptop.local`.
 See the [wiki](https://github.com/thoughtbot/laptop/wiki)
 for more customization examples.
 
-Contributing
-------------
 
-Edit the `mac` file.
-Document in the `README.md` file.
-Follow shell style guidelines by using [ShellCheck] and [Syntastic].
 
-```sh
-brew install shellcheck
-```
 
-[ShellCheck]: http://www.shellcheck.net/about.html
-[Syntastic]: https://github.com/scrooloose/syntastic
 
-Thank you, [contributors]!
+Forked from [Laptop](https://github.com/thoughtbot/laptop/)
 
-[contributors]: https://github.com/thoughtbot/laptop/graphs/contributors
-
-By participating in this project,
-you agree to abide by the thoughtbot [code of conduct].
-
-[code of conduct]: https://thoughtbot.com/open-source-code-of-conduct
 
 License
 -------
