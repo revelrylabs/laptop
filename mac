@@ -74,6 +74,8 @@ update_shell() {
     sudo sh -c "echo $shell_path >> /etc/shells"
   fi
   sudo chsh -s "$shell_path" "$USER"
+  fancy_echo "Adding OhMyZsh ..."
+  sudo sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 }
 
 case "$SHELL" in
@@ -121,6 +123,7 @@ brew 'openjdk'
 brew 'fd'
 brew 'fzf'
 brew 'git'
+brew 'gh'
 brew 'gnu-sed'
 brew 'gnupg'
 brew 'heroku'
