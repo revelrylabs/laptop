@@ -170,6 +170,14 @@ add_or_update_asdf_plugin() {
   else
     asdf plugin-update "$name"
   fi
+
+  if ! [ "$name" == "nodejs" ]; then
+      # Installing 15.14.0 because 16.0 breaks Phoenix 1.5 and lower
+      asdf install node 15.14.0
+  else
+    asdf install "$name" latest
+  fi
+
 }
 
 source $(brew --prefix asdf)/asdf.sh
