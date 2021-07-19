@@ -183,7 +183,7 @@ add_or_update_asdf_plugin() {
 
   if ! [ "$name" == "nodejs" ]; then
       # Installing 15.14.0 because 16.0 breaks Phoenix 1.5 and lower
-      asdf install node 15.14.0
+      asdf install nodejs 15.14.0
     else
     CFLAGS="-Wno-error=implicit-function-declaration" asdf install "$name" latest
   fi
