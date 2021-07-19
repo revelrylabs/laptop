@@ -98,7 +98,7 @@ update_paths_in_zshrc() {
   export PATH="$HOMEBREW_PREFIX/bin:$PATH"
 }
 
-echo "Are you migrating from an Intel Macbook AND have already ran Migration Assistant? Y or N"
+echo "Are you migrating from an Intel Macbook AND have already run Migration Assistant? Y or N"
 read is_a_migration
 
 if ! [ "$is_a_migration" == "${is_a_migration#[Yy]}" ]; then
