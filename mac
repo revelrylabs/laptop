@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Welcome to the thoughtbot laptop script!
+# Welcome to the Revelry laptop script!
 # Be prepared to turn your laptop (or desktop, no haters here)
 # into an awesome development machine.
 
@@ -74,6 +74,8 @@ update_shell() {
     sudo sh -c "echo $shell_path >> /etc/shells"
   fi
   sudo chsh -s "$shell_path" "$USER"
+  fancy_echo "Adding OhMyZsh ..."
+  sudo sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 }
 
 case "$SHELL" in
@@ -87,23 +89,45 @@ case "$SHELL" in
     ;;
 esac
 
+update_paths_in_zshrc() {
+  fancy_echo "Updating Brew and ASDF paths in .zshrc"
+
+  append_to_zshrc "export PATH=\"$HOMEBREW_PREFIX/bin:$PATH\"" 1
+  append_to_zshrc "source $(brew --prefix asdf)/asdf.sh" 1
+
+  export PATH="$HOMEBREW_PREFIX/bin:$PATH"
+}
+
+echo "Are you migrating from an Intel Macbook AND have already run Migration Assistant? Y or N"
+read is_a_migration
+
+if ! [ "$is_a_migration" == "${is_a_migration#[Yy]}" ]; then
+
+  fancy_echo "Creating dump file of migrated Homebrew formulae .."
+  brew bundle dump
+
+  fancy_echo "Installing Homebrew to opt/homebrew ..."
+     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+  update_paths_in_zshrc
+fi
+
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew ..."
-    /bin/bash -c \
-      "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
     append_to_zshrc '# recommended by brew doctor'
 
-    # shellcheck disable=SC2016
-    append_to_zshrc "export PATH=\"$HOMEBREW_PREFIX/bin:$PATH\"" 1
-    append_to_zshrc "source $(brew --prefix asdf)/asdf.sh" 1
-
-    export PATH="$HOMEBREW_PREFIX/bin:$PATH"
+    update_paths_in_zshrc
 fi
 
 fancy_echo "Updating Homebrew formulae ..."
 brew update --force # https://github.com/Homebrew/brew/issues/1151
-brew bundle --file=- <<EOF
+
+if ! [ "$is_a_migration" == "${is_a_migration#[Yy]}" ]; then
+  brew bundle --file Brewfile # Created by bundle dump for migration users
+else
+  brew bundle --file=- <<EOF
 cask_args appdir: '/Applications'
 
 tap 'homebrew/cask'
@@ -121,6 +145,7 @@ brew 'openjdk'
 brew 'fd'
 brew 'fzf'
 brew 'git'
+brew 'gh'
 brew 'gnu-sed'
 brew 'gnupg'
 brew 'heroku'
@@ -145,6 +170,7 @@ brew 'zsh-autosuggestions'
 brew 'zsh-history-substring-search'
 brew 'zsh-syntax-highlighting'
 EOF
+fi
 
 add_or_update_asdf_plugin() {
   local name="$1"
@@ -154,6 +180,14 @@ add_or_update_asdf_plugin() {
   else
     asdf plugin-update "$name"
   fi
+
+  if ! [ "$name" == "nodejs" ]; then
+      # Installing 15.14.0 because 16.0 breaks Phoenix 1.5 and lower
+      asdf install nodejs 15.14.0
+    else
+    CFLAGS="-Wno-error=implicit-function-declaration" asdf install "$name" latest
+  fi
+
 }
 
 source $(brew --prefix asdf)/asdf.sh
